@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vhembe Comfort Designs | Premium Furniture</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #e67e22; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f4f4f4; color: #333; }
+        
+        /* New Nav Styling */
+        nav { background: #333; padding: 1rem; display: flex; gap: 20px; justify-content: center; position: sticky; top: 0; z-index: 2000; }
+        nav a { color: white; text-decoration: none; cursor: pointer; font-weight: bold; }
+        .page { display: none; }
+        .active { display: block; }
+
+        header { background: var(--primary); color: white; padding: 3rem 1rem; text-align: center; }
+        .hero-section { text-align: center; padding: 20px; background: white; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; padding: 40px 20px; max-width: 1200px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card img { width: 100%; height: 250px; object-fit: cover; border-radius: 8px; }
+        .price { font-size: 1.2rem; color: var(--accent); font-weight: bold; }
+        .btn { display: block; width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        /* Modal Form */
+        #order-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; overflow-y: auto; }
+        .modal-content { background: white; width: 90%; max-width: 450px; margin: 5% auto; padding: 25px; border-radius: 12px; }
+        input, textarea { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        
+        /* Cart Table */
+        .cart-page { padding: 40px; max-width: 800px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 20px; }
+        th, td { padding: 15px; border: 1px solid #ddd; text-align: left; }
+        
+        footer { background: #333; color: white; padding: 30px; text-align: center; }
+        .socials a { color: var(--accent); margin: 0 15px; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a onclick="showPage('home')">Home</a>
+    <a onclick="showPage('cart')">My Cart</a>
+    <a onclick="showPage('contact')">Contact Us</a>
+</nav>
+
+<div id="home" class="page active">
+    <header>
+        <h1>Vhembe Comfort Designs</h1>
+        <p>Exquisite Headboards & Bedroom Furniture</p>
+    </header>
+
+    <div class="hero-section">
+        <h3>Have a custom design in mind?</h3>
+        <button class="btn" style="width: auto; margin: auto; padding: 10px 25px;" onclick="openForm('Custom Design Request')">Request a Custom Quote</button>
+    </div>
+
+    <div class="grid" id="shop"></div>
+</div>
+
+<div id="cart" class="page cart-page">
+    <h2>Your Shopping Cart</h2>
+    <table id="cart-table">
+        <thead><tr><th>Product</th><th>Price</th><th>Action</th></tr></thead>
+        <tbody id="cart-body"></tbody>
+    </table>
+    <h3 id="total-price">Total: R0</h3>
+    <button class="btn" onclick="checkout()">Proceed to WhatsApp Checkout</button>
+</div>
+
+<div id="contact" class="page" style="text-align: center; padding: 50px;">
+    <h2>Contact Us</h2>
+    <p>WhatsApp: <strong>073 177 6351</strong></p>
+    <p>Email: info@vhembecomfort.co.za</p>
+</div>
+
+<div id="order-modal">
+    <div class="modal-content">
+        <h3 id="modal-title">Complete Your Order</h3>
+        <input type="text" id="custName" placeholder="Full Name">
+        <input type="text" id="custPhone" placeholder="Phone Number">
+        <textarea id="custAddr" placeholder="Delivery Address"></textarea>
+        <textarea id="prodDetails" placeholder="Details or Custom Request"></textarea>
+        <button class="btn" onclick="sendOrder()">Send to WhatsApp</button>
+        <button class="btn" style="background:#7f8c8d" onclick="closeForm()">Close</button>
+    </div>
+</div>
+
+<footer>
+    <div class="socials">
+        <a href="#">Facebook</a> | <a href="#">Instagram</a> | <a href="https://wa.me/27731776351">WhatsApp Us</a>
+    </div>
+    <p>&copy; 2026 Vhembe Comfort Designs</p>
+</footer>
+
+<script>
+    let cart = [];
+    const products = [
+        { name: "Velvet Yellow Tufted", img: "WhatsApp Image 2026-05-20 at 15.35.22 (1).jpeg", price: 900, desc: "Luxury velvet finish." },
+        { name: "Luxury Grey Tufted", img: "WhatsApp Image 2026-05-14 at 11.41.35 (3).jpeg", price: 1300, desc: "Modern grey aesthetic." },
+        { name: "Modern Blue Geometric", img: "WhatsApp Image 2026-05-14 at 11.41.35 (2).jpeg", price: 2600, desc: "Unique geometric pattern." },
+        { name: "Pink Panel Design", img: "WhatsApp Image 2026-05-14 at 11.41.35 (1).jpeg", price: 600, desc: "Soft touch paneling." },
+        { name: "Beige Vertical Line", img: "WhatsApp Image 2026-05-14 at 11.41.36 (2).jpeg", price: 1600, desc: "Elegant vertical lines." },
+        { name: "Standard Velvet", img: "WhatsApp Image 2026-05-20 at 15.35.21 (1).jpeg", price: 1900, desc: "Timeless classic design." }
+    ];
+
+    function showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    const shop = document.getElementById('shop');
+    products.forEach(p => {
+        shop.innerHTML += `
+            <div class="card">
+                <img src="${p.img}" alt="${p.name}">
+                <h3>${p.name}</h3>
+                <p>${p.desc}</p>
+                <p class="price">R${p.price}</p>
+                <button class="btn" onclick="addToCart('${p.name}', ${p.price})">Add to Cart</button>
+            </div>
+        `;
+    });
+
+    function addToCart(name, price) {
+        cart.push({ name, price });
+        updateCartDisplay();
+        alert(name + " added to your cart!");
+    }
+
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        updateCartDisplay();
+    }
+
+    function updateCartDisplay() {
+        const body = document.getElementById('cart-body');
+        let total = 0;
+        body.innerHTML = '';
+        cart.forEach((item, index) => {
+            total += item.price;
+            body.innerHTML += `<tr><td>${item.name}</td><td>R${item.price}</td><td><button onclick="removeFromCart(${index})">Cancel</button></td></tr>`;
+        });
+        document.getElementById('total-price').innerText = "Total: R" + total;
+    }
+
+    function openForm(name) {
+        document.getElementById('modal-title').innerText = name === 'Custom Design Request' ? 'Request a Custom Design' : 'Order: ' + name;
+        document.getElementById('prodDetails').value = name === 'Custom Design Request' ? '' : 'I would like to order: ' + name;
+        document.getElementById('order-modal').style.display = 'block';
+    }
+
+    function closeForm() { document.getElementById('order-modal').style.display = 'none'; }
+
+    function sendOrder() {
+        const name = document.getElementById('custName').value;
+        const phone = document.getElementById('custPhone').value;
+        const addr = document.getElementById('custAddr').value;
+        const details = document.getElementById('prodDetails').value;
+        const msg = `Hi, I have an order:%0A%0AItem: ${details}%0AName: ${name}%0APhone: ${phone}%0ADelivery Address: ${addr}`;
+        window.open(`https://wa.me/27731776351?text=${msg}`);
+    }
+
+    function checkout() {
+        if(cart.length === 0) return alert("Cart is empty!");
+        let msg = "Hi, I would like to order: " + cart.map(i => i.name).join(', ');
+        window.open(`https://wa.me/27731776351?text=${encodeURIComponent(msg)}`);
+    }
+</script>
+</body>
+</html>
